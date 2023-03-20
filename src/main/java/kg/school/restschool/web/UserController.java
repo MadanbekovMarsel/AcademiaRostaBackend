@@ -55,21 +55,20 @@ public class UserController {
     }
 
     @GetMapping("/{idUser}/groups")
-    public ResponseEntity<List<Group>> getGroupByUserId(@PathVariable("idUser") String idUser) throws SearchException {
+    public ResponseEntity<List<Group>> getGroupByUserId(@PathVariable("idUser") String idUser){
         User user = userService.getUserById(Long.parseLong(idUser));
         List<Group> groups = user.getGroupsList();
         return new ResponseEntity<>(groups,HttpStatus.OK);
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDTO> getUserProfile(@PathVariable("userId") String userId) throws SearchException {
+    public ResponseEntity<UserDTO> getUserProfile(@PathVariable("userId") String userId){
         User user = userService.getUserById(Long.parseLong(userId));
-
         UserDTO userDTO = userFacade.userToUserDTO(user);
         return new ResponseEntity<>(userDTO,HttpStatus.OK);
     }
 
-    @PostMapping("/update")
+    @PatchMapping("/")
     public ResponseEntity<Object> updateUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult,Principal principal) throws SearchException {
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if(!ObjectUtils.isEmpty(errors))    return errors;

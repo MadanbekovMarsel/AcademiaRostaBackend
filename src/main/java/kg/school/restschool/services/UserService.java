@@ -43,7 +43,7 @@ public class UserService {
         user.setUsername(userIn.getUsername());
         user.setPassword(passwordEncoder.encode(userIn.getPassword()));
         user.setAge(userIn.getAge());
-        user.setFathersName(userIn.getFathersname());
+        user.setFathersName(userIn.getFathersName());
         user.getRoles().add(ERole.ROLE_PUPIL);
         try {
             LOG.info("Saving User {}",userIn.getUsername());
@@ -96,7 +96,7 @@ public class UserService {
     }
 
     public User getUserById(Long id) throws SearchException {
-        return userRepository.getUserById(id).orElseThrow(()->new UsernameNotFoundException("User not found"));
+        return userRepository.getUserById(id).orElseThrow(()->new SearchException(SearchException.USER_NOT_FOUND));
     }
 
     public User getCurrentUser(Principal principal){
@@ -104,10 +104,10 @@ public class UserService {
     }
 
     public User getUserByUsername(String username){
-        return userRepository.findUserByUsername(username).orElseThrow(()->new UsernameNotFoundException("User not found"));
+        return userRepository.findUserByUsername(username).orElseThrow(()->new SearchException(SearchException.USER_NOT_FOUND));
     }
     private User getUserByPrincipal(Principal principal) {
         String username = principal.getName();
-        return userRepository.findUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return userRepository.findUserByUsername(username).orElseThrow(() -> new SearchException(SearchException.USER_NOT_FOUND));
     }
 }

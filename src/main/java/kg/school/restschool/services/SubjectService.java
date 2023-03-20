@@ -30,7 +30,7 @@ public class SubjectService {
             LOG.info("Saving Subject {}",subject.getName());
             return subjectRepository.save(subject);
         }catch (Exception e){
-            LOG.error("ERROR during registration. {}",e.getMessage());
+            LOG.error("ERROR during saving subject. {}",e.getMessage());
             throw new ExistException(ExistException.SUBJECT_EXISTS);
         }
     }

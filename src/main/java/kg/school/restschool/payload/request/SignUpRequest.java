@@ -18,7 +18,7 @@ public class SignUpRequest {
     private String lastname;
 
     @NotEmpty(message = "Please enter your fathersname")
-    private String fathersname;
+    private String fathersName;
 
     @NotEmpty(message = "Username can't be empty!")
     private String username;

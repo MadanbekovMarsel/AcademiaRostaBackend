@@ -43,7 +43,6 @@ public class SubjectController {
             return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.OK);
         }
     }
-
     @GetMapping("/")
     public ResponseEntity<Object> allSubjects() {
         try {
@@ -56,10 +55,10 @@ public class SubjectController {
 
 
 
-    @PostMapping("/{idSubject}/update")
-    public ResponseEntity<Object> updateSubject(@PathVariable("idSubject") String idSubject,
-                                                BindingResult bindingResult,
-                                                SubjectDTO subjectDTO) throws SearchException {
+    @PatchMapping("/{idSubject}/update")
+    public ResponseEntity<Object> updateSubject(@RequestBody SubjectDTO subjectDTO,
+                                                @PathVariable("idSubject") String idSubject,
+                                                BindingResult bindingResult){
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
 
@@ -71,7 +70,7 @@ public class SubjectController {
         }
     }
 
-    @PostMapping("/{idSubject}/delete")
+    @DeleteMapping ("/{idSubject}")
     public ResponseEntity<Object> deleteSubject(@PathVariable("idSubject") String idSubject,
                                                 BindingResult bindingResult) {
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);

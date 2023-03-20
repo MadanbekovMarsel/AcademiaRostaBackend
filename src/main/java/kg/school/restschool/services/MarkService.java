@@ -3,12 +3,12 @@ package kg.school.restschool.services;
 import kg.school.restschool.dto.MarkDTO;
 import kg.school.restschool.entity.Mark;
 import kg.school.restschool.entity.User;
+import kg.school.restschool.exceptions.SearchException;
 import kg.school.restschool.repositories.MarkRepository;
 import kg.school.restschool.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
@@ -47,7 +47,6 @@ public class MarkService {
     }
     private User getUserByPrincipal(Principal principal){
         String username = principal.getName();
-        return userRepository.findUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User with username "+
-                username + " not found!"));
+        return userRepository.findUserByUsername(username).orElseThrow(() -> new SearchException(SearchException.USER_NOT_FOUND));
     }
 }

@@ -58,6 +58,11 @@ public class Text {
         data.put("ERROR_ADDITIONAL_EXISTS","Такая запись уже существует!");
         data.put("ERROR_TIMETABLE_EXISTS","Расписание уже существует!");
 
+        data.put("ERROR_NAME_CAN'T_BE_EMPTY","Поле имени не может быть пустым!");
+        data.put("ERROR_PASSWORD_CAN'T_BE_EMPTY","Пароль не должен быть пустым!");
+        data.put("ERROR_USERNAME_CAN'T_BE_EMPTY","Имя пользователя не может быть пустым!");
+        data.put("ERROR_AGE_MUST_BE_BETWEEN_0_100","Возраст должен быть в диапазоне 0-100!");
+
 
 
         data.put("YES","Да");

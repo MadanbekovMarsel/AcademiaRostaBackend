@@ -1,7 +1,6 @@
 package kg.school.restschool.web;
 
 import jakarta.validation.Valid;
-import kg.school.restschool.dto.GroupDTO;
 import kg.school.restschool.payload.request.LoginRequest;
 import kg.school.restschool.payload.request.SignUpRequest;
 import kg.school.restschool.payload.response.JwtTokenSuccessResponse;

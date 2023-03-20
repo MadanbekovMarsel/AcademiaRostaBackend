@@ -1,13 +1,13 @@
 package kg.school.restschool.services;
 
 import kg.school.restschool.entity.User;
+import kg.school.restschool.exceptions.SearchException;
 import kg.school.restschool.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,15 +24,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User with " +
-                "such username not found!"));
-        System.out.println("hello my friend I found the user "+ user.getUsername() + " " +user.getFirstName());
+    public UserDetails loadUserByUsername(String username){
+        User user = userRepository.findUserByUsername(username).orElseThrow(() -> new SearchException(SearchException.USER_NOT_FOUND));
         return build(user);
     }
 
     public User loadUserById(Long id){
-        return userRepository.getUserById(id).orElse(null);
+        return userRepository.getUserById(id).orElseThrow(() -> new SearchException(SearchException.USER_NOT_FOUND));
     }
 
     public static User build(User user){
