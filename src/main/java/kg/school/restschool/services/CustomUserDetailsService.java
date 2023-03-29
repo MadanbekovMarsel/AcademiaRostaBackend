@@ -10,6 +10,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,9 +36,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     public static User build(User user){
-        List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.name()))
-                .collect(Collectors.toList());
+        List<GrantedAuthority> authorities = new ArrayList<>(user.getRole().ordinal());
         return new User(user.getId(),user.getUsername(),user.getPassword(),authorities);
     }
 }

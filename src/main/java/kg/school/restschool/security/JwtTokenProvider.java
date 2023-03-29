@@ -46,9 +46,6 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token){
         try{
-//            Jwts.parser()
-//                    .setSigningKey(SecurityConstants.SECRET)
-//                    .parseClaimsJws(token);
             System.out.println("Hello my friend its also me");
             SecretKey secret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(SecurityConstants.SECRET));
             Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(token);

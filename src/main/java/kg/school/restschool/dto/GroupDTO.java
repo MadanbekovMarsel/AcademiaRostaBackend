@@ -1,8 +1,7 @@
 package kg.school.restschool.dto;
 
 import jakarta.validation.constraints.NotEmpty;
-import kg.school.restschool.entity.Subject;
-import kg.school.restschool.entity.Timetable;
+import kg.school.restschool.entity.User;
 import lombok.Data;
 
 @Data
@@ -11,5 +10,6 @@ public class GroupDTO {
     @NotEmpty
     private String name;
     private SubjectDTO subject;
+    private String teacher;
     private TimetableDTO timetable;
 }

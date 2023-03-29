@@ -85,12 +85,16 @@ public class GroupService {
     }
 
 
-    public Group addUserToGroupById(Long groupId, UserDTO userDTO){
+    public Group addUserToGroupById(Long groupId, UserDTO userDTO) {
         User user = getUserByUsername(userDTO.getUsername());
         Group group = getGroupById(groupId);
-        group.getMembers().add(user);
-        groupRepository.save(group);
-        return group;
+        try {
+            group.getMembers().add(user);
+            groupRepository.save(group);
+            return group;
+        }catch (Exception e){
+            throw new ExistException(ExistException.GROUP_CONTAINS_USER);
+        }
     }
 
 //    public Group setTimetableToGroup(TimetableDTO timetableDTO, String groupName){
@@ -143,6 +147,11 @@ public class GroupService {
         }catch (Exception e){
             throw new ExistException(ExistException.USER_EXISTS);
         }
+    }
+
+    public List<Group> getGroupsByUsername(String username){
+        User user = getUserByUsername(username);
+        return user.getGroupsList();
     }
 
     //Get Methods

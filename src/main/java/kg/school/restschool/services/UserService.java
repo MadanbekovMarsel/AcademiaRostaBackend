@@ -6,17 +6,18 @@ import kg.school.restschool.entity.User;
 import kg.school.restschool.entity.enums.ERole;
 import kg.school.restschool.exceptions.ExistException;
 import kg.school.restschool.exceptions.SearchException;
+import kg.school.restschool.facade.UserFacade;
 import kg.school.restschool.payload.request.SignUpRequest;
 import kg.school.restschool.repositories.GroupRepository;
 import kg.school.restschool.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,12 +29,14 @@ public class UserService {
     private final GroupRepository groupRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private final UserFacade userFacade;
 
     @Autowired
-    public UserService(UserRepository userRepository, GroupRepository groupRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, GroupRepository groupRepository, PasswordEncoder passwordEncoder, UserFacade userFacade) {
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userFacade = userFacade;
     }
 
     public User createUser(SignUpRequest userIn){
@@ -44,7 +47,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(userIn.getPassword()));
         user.setAge(userIn.getAge());
         user.setFathersName(userIn.getFathersName());
-        user.getRoles().add(ERole.ROLE_PUPIL);
+        user.setRole(ERole.ROLE_PUPIL);
         try {
             LOG.info("Saving User {}",userIn.getUsername());
             return userRepository.save(user);
@@ -54,6 +57,31 @@ public class UserService {
         }
     }
 
+    public List<User> getMembersOfGroup(Long groupId){
+        Group group = getGroupByGroupId(groupId);
+        return group.getMembers();
+    }
+
+    public List<UserDTO> getAllPupils(){
+        List<User> pupils = userRepository.getUsersByRole(ERole.ROLE_PUPIL);
+
+        List<UserDTO> res = new ArrayList<>();
+        for(User current : pupils){
+            res.add(userFacade.userToUserDTO(current));
+        }
+        return res;
+    }
+
+    public List<UserDTO> getAllTeachers(){
+        List<User> teachers = userRepository.getUsersByRole(ERole.ROLE_TEACHER);
+
+        List<UserDTO> res = new ArrayList<>();
+        for(User current : teachers){
+            res.add(userFacade.userToUserDTO(current));
+        }
+        return res;
+    }
+
     public User addGroupToUser(String username, String groupname){
 
         User user = getUserByUsername(username);
@@ -61,9 +89,10 @@ public class UserService {
         try {
             user.addGroup(group);
             group.addUser(user);
+            groupRepository.save(group);
             return userRepository.save(user);
         }catch (Exception e){
-            throw new ExistException(ExistException.GROUP_EXISTS);
+            throw new ExistException(ExistException.GROUP_CONTAINS_USER);
         }
     }
 
@@ -79,23 +108,23 @@ public class UserService {
     }
 
     public User updateUserById(Long id, UserDTO userDTO){
-        User userToUpdate = userRepository.getUserById(id).orElseThrow(()->new UsernameNotFoundException("User not found"));
+        User userToUpdate = getUserById(id);
         userToUpdate.setFirstName((userDTO.getFirstname() != null) ? userDTO.getFirstname() : userToUpdate.getFirstName());
         userToUpdate.setLastName((userDTO.getLastname() != null) ? userDTO.getLastname() : userToUpdate.getLastName());
         userToUpdate.setAge((userDTO.getAge() != 0) ? userDTO.getAge() : userToUpdate.getAge());
         return userRepository.save(userToUpdate);
     }
 
-    public List<Group> getGroupsByUsername(String username){
-        User user = getUserByUsername(username);
-        return user.getGroupsList();
-    }
 
+
+    private Group getGroupByGroupId(Long groupId) {
+        return groupRepository.findById(groupId).orElseThrow(() -> new SearchException(SearchException.GROUP_NOT_FOUND));
+    }
     private Group getGroupByGroupname(String groupname) throws SearchException {
         return groupRepository.findGroupsByName(groupname).orElseThrow(() -> new SearchException(SearchException.GROUP_NOT_FOUND));
     }
 
-    public User getUserById(Long id) throws SearchException {
+    public User getUserById(Long id){
         return userRepository.getUserById(id).orElseThrow(()->new SearchException(SearchException.USER_NOT_FOUND));
     }
 

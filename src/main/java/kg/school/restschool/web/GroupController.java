@@ -18,7 +18,6 @@ import kg.school.restschool.validations.ResponseErrorValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -55,21 +54,34 @@ public class GroupController {
     @PostMapping("/create")
     public ResponseEntity<Object> createGroup(@Valid @RequestBody GroupDTO groupDTO,
                                               BindingResult bindingResult) {
+        System.out.println("hello there is request to create group");
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
         try {
             Group created = groupService.createGroup(groupDTO);
             return new ResponseEntity<>(groupFacade.groupToGroupDTO(created), HttpStatus.OK);
         }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<Object> getAllGroups(){
+        List<Group> allGroups = groupService.getAllGroups();
+
+        List<GroupDTO> responseGroups = new ArrayList<>();
+        for(Group g : allGroups){
+            responseGroups.add(groupFacade.groupToGroupDTO(g));
+        }
+        return new ResponseEntity<>(responseGroups,HttpStatus.OK);
+    }
+
+
+
     @GetMapping("/")
     public ResponseEntity<Object> getCurrentUsersGroups(Principal principal) {
-
         try {
-            List<Group> groups = userService.getGroupsByUsername(principal.getName());
+            List<Group> groups = groupService.getGroupsByUsername(principal.getName());
             List<GroupDTO> groupDTOS = new ArrayList<>();
             for (Group currentGroup : groups) {
                 groupDTOS.add(groupFacade.groupToGroupDTO(currentGroup));
@@ -126,6 +138,8 @@ public class GroupController {
     @PatchMapping("/{groupName}/{username}/add")
     public ResponseEntity<Object> addUserToGroup(@PathVariable("username") String username,
                                                  @PathVariable("groupName") String groupName) {
+
+        System.out.println("request to set " + username + "\n" + " to " + groupName);
         try {
             Group group = groupService.addUserToGroup(username, groupName);
             userService.addGroupToUser(username, groupName);
@@ -133,7 +147,7 @@ public class GroupController {
             GroupDTO groupDTO = groupFacade.groupToGroupDTO(group);
             return new ResponseEntity<>(groupDTO, HttpStatus.OK);
         }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -174,12 +188,11 @@ public class GroupController {
                                                       @PathVariable("groupName") String groupName) {
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
-
         try {
             Timetable timetable = timeTableService.createTimetableToGroup(timetableDTO, groupName);
             return new ResponseEntity<>(timeTableFacade.getTimeTableFacade(timetable), HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.OK);
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 }

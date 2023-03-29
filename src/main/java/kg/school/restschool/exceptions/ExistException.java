@@ -12,6 +12,8 @@ public class ExistException extends RuntimeException{
     public static final int ADDITIONAL_EXISTS = 4;
     public static final int TIMETABLE_EXISTS = 5;
 
+    public static final int GROUP_CONTAINS_USER = 6;
+
 
     private final int code;
 
@@ -32,6 +34,8 @@ public class ExistException extends RuntimeException{
                 return Text.get("ERROR_ADDITIONAL_EXISTS");
             case 5:
                 return Text.get("ERROR_TIMETABLE_EXISTS");
+            case 6:
+                return Text.get("ERROR_GROUP_CONTAINS_USER");
         }
         return "";
     }

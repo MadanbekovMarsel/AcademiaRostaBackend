@@ -38,7 +38,7 @@ public class Group {
 
     public User getTeacher(){
         for(User current : members){
-            if(current.getRoles().contains(ERole.ROLE_TEACHER)) return current;
+            if(current.getRole() == ERole.ROLE_TEACHER) return current;
         }
         return null;
     }

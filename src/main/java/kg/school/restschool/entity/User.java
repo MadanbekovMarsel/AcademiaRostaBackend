@@ -37,10 +37,7 @@ public class User implements UserDetails {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @ElementCollection(targetClass = ERole.class)
-    @CollectionTable(name = "user_role",
-                    joinColumns = @JoinColumn(name = "id_user"))
-    private Set<ERole> roles = new HashSet<>();
+    private ERole role;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "User_Group",
