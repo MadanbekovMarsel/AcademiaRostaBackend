@@ -2,6 +2,7 @@ package kg.school.restschool.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import kg.school.restschool.entity.enums.ERole;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -47,6 +48,10 @@ public class User implements UserDetails {
     @JsonFormat(pattern = "yyyy-mm-dd HH:mm:ss")
     @Column(updatable = false)
     private LocalDate createdDate;
+
+    @Column
+    @Email
+    private String email;
 
     @Transient
     private Collection<? extends GrantedAuthority> authorities;

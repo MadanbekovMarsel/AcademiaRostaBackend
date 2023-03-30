@@ -1,9 +1,6 @@
 package kg.school.restschool.payload.request;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import kg.school.restschool.annotations.PasswordMatches;
 import lombok.Data;
 
@@ -17,7 +14,7 @@ public class SignUpRequest {
     @NotEmpty(message = "Please enter your lastname!")
     private String lastname;
 
-    @NotEmpty(message = "Please enter your fathersname")
+    @NotEmpty(message = "Please enter your fathers name")
     private String fathersName;
 
     @NotEmpty(message = "Username can't be empty!")
@@ -29,6 +26,9 @@ public class SignUpRequest {
 
     @NotEmpty(message = "confirm your password!")
     private String confirmPassword;
+
+    @Email(message = "Not valid email!")
+    private String email;
 
     @Min(value = 0,message = "Age couldn't be less than 0")
     @Max(value = 100,message = "Age couldn't be more than 100")

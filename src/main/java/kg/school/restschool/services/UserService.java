@@ -46,6 +46,8 @@ public class UserService {
         user.setUsername(userIn.getUsername());
         user.setPassword(passwordEncoder.encode(userIn.getPassword()));
         user.setAge(userIn.getAge());
+        user.setEmail(userIn.getEmail());
+        System.out.println(userIn.getEmail());
         user.setFathersName(userIn.getFathersName());
         user.setRole(ERole.ROLE_PUPIL);
         try {
