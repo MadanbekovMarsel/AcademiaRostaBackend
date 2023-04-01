@@ -1,9 +1,7 @@
 package kg.school.restschool.web;
 
-import jakarta.validation.Valid;
 import kg.school.restschool.dto.SubjectDTO;
 import kg.school.restschool.entity.Subject;
-import kg.school.restschool.exceptions.SearchException;
 import kg.school.restschool.payload.response.MessageResponse;
 import kg.school.restschool.services.SubjectService;
 import kg.school.restschool.validations.ResponseErrorValidation;

@@ -1,7 +1,6 @@
 package kg.school.restschool.web;
 
 import jakarta.validation.Valid;
-import kg.school.restschool.dto.GroupDTO;
 import kg.school.restschool.dto.UserDTO;
 import kg.school.restschool.entity.Group;
 import kg.school.restschool.entity.User;
@@ -30,23 +29,18 @@ public class UserController {
 
     private final UserService userService;
     private final UserFacade userFacade;
-    private final GroupFacade groupFacade;
     private final ResponseErrorValidation responseErrorValidation;
 
-    private final GroupService groupService;
 
     @Autowired
     public UserController(UserService userService, UserFacade userFacade, GroupFacade groupFacade, ResponseErrorValidation responseErrorValidation, GroupService groupService) {
         this.userService = userService;
         this.userFacade = userFacade;
-        this.groupFacade = groupFacade;
         this.responseErrorValidation = responseErrorValidation;
-        this.groupService = groupService;
     }
 
     @GetMapping("/")
     public ResponseEntity<Object> getCurrentUser(Principal principal) {
-        System.out.println("Hello im looking for " + principal.getName());
         try {
             User user = userService.getCurrentUser(principal);
             UserDTO userDTO = userFacade.userToUserDTO(user);
@@ -79,11 +73,14 @@ public class UserController {
     }
 
     @GetMapping("/{idUser}/groups")
-    public ResponseEntity<List<Group>> getGroupByUserId(@PathVariable("idUser") String idUser){
-        User user = userService.getUserById(Long.parseLong(idUser));
-        List<Group> groups = user.getGroupsList();
-
-        return new ResponseEntity<>(groups,HttpStatus.OK);
+    public ResponseEntity<Object> getGroupByUserId(@PathVariable("idUser") String idUser) {
+        try {
+            User user = userService.getUserById(Long.parseLong(idUser));
+            List<Group> groups = user.getGroupsList();
+            return new ResponseEntity<>(groups, HttpStatus.OK);
+        }catch (RuntimeException e){
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/{groupId}/members")
@@ -112,11 +109,14 @@ public class UserController {
     @PatchMapping("/")
     public ResponseEntity<Object> updateUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult,Principal principal) throws SearchException {
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
-        if(!ObjectUtils.isEmpty(errors))    return errors;
+        if (!ObjectUtils.isEmpty(errors)) return errors;
 
-        User user = userService.userUpdate(userDTO,principal);
-
-        UserDTO userUpdated = userFacade.userToUserDTO(user);
-        return new ResponseEntity<>(userUpdated, HttpStatus.OK);
+        try {
+            User user = userService.userUpdate(userDTO, principal);
+            UserDTO userUpdated = userFacade.userToUserDTO(user);
+            return new ResponseEntity<>(userUpdated, HttpStatus.OK);
+        }catch (RuntimeException e){
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
     }
 }

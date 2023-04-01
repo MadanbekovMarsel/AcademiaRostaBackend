@@ -30,7 +30,7 @@ import java.security.Principal;
 //@PreAuthorize("permitAll()")
 public class AuthController {
 
-    private final EmailServiceImpl messageSender;
+//    private final EmailServiceImpl messageSender;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
 
@@ -40,7 +40,7 @@ public class AuthController {
 
     @Autowired
     public AuthController(EmailServiceImpl messageSender, JwtTokenProvider jwtTokenProvider, AuthenticationManager authenticationManager, ResponseErrorValidation responseErrorValidation, UserService userService) {
-        this.messageSender = messageSender;
+//        this.messageSender = messageSender;
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
         this.responseErrorValidation = responseErrorValidation;
@@ -57,7 +57,7 @@ public class AuthController {
                 loginRequest.getPassword()
         ));
 
-        messageSender.sendSimpleMessage("1904.01013@manas.edu.kg","hello","hello world");
+//        messageSender.sendSimpleMessage("1904.01013@manas.edu.kg","hello","hello world");
         User user = userService.getUserByUsername(loginRequest.getUsername());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -66,12 +66,6 @@ public class AuthController {
         return ResponseEntity.ok(new JwtTokenSuccessResponse(true, jwt,user.getRole().toString()));
     }
 
-
-    @GetMapping("/")
-    public ResponseEntity<Object> getUsersRole(Principal principal){
-        User user = userService.getCurrentUser(principal);
-        return new ResponseEntity<>(user.getRole().toString(),HttpStatus.OK);
-    }
     @PostMapping("/signUp")
     public ResponseEntity<Object> registerUser(@RequestBody SignUpRequest signUpRequest, BindingResult bindingResult) {
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);

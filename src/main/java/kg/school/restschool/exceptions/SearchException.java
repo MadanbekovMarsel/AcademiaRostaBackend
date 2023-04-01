@@ -1,5 +1,6 @@
 package kg.school.restschool.exceptions;
 
+import com.jayway.jsonpath.spi.cache.Cache;
 import kg.school.restschool.settings.Text;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -12,6 +13,7 @@ public class SearchException extends RuntimeException{
     public static final int ADDITIONAL_NOT_FOUND = 4;
     public static final int TIMETABLE_NOT_FOUND = 5;
 
+    public static final int TASK_NOT_FOUND = 6;
 
     private final int code;
 
@@ -33,6 +35,8 @@ public class SearchException extends RuntimeException{
                 return Text.get("ERROR_ADDITIONAL_NOT_FOUND");
             case 5:
                 return Text.get("ERROR_TIMETABLE_NOT_FOUND");
+            case 6:
+                return Text.get("ERROR_TASK_NOT_FOUND");
         }
         return "";
     }

@@ -36,7 +36,6 @@ public class GroupController {
     private final UserService userService;
 
     private final TimeTableService timeTableService;
-    private final SubjectService subjectService;
     private final TimeTableFacade timeTableFacade;
     private final ResponseErrorValidation responseErrorValidation;
 
@@ -46,7 +45,6 @@ public class GroupController {
         this.groupFacade = groupFacade;
         this.userService = userService;
         this.timeTableService = timeTableService;
-        this.subjectService = subjectService;
         this.timeTableFacade = timeTableFacade;
         this.responseErrorValidation = responseErrorValidation;
     }
@@ -75,8 +73,6 @@ public class GroupController {
         }
         return new ResponseEntity<>(responseGroups,HttpStatus.OK);
     }
-
-
 
     @GetMapping("/")
     public ResponseEntity<Object> getCurrentUsersGroups(Principal principal) {
@@ -138,8 +134,6 @@ public class GroupController {
     @PatchMapping("/{groupName}/{username}/add")
     public ResponseEntity<Object> addUserToGroup(@PathVariable("username") String username,
                                                  @PathVariable("groupName") String groupName) {
-
-        System.out.println("request to set " + username + "\n" + " to " + groupName);
         try {
             Group group = groupService.addUserToGroup(username, groupName);
             userService.addGroupToUser(username, groupName);

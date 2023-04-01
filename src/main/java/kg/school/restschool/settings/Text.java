@@ -48,9 +48,10 @@ public class Text {
         data.put("ERROR_DATE_FORMAT","Неправильный формат даты!");
 
         data.put("ERROR_USER_NOT_FOUND","Пользователь не найден!");
-        data.put("ERROR_SUBJECT_NOT_FOUND","Предмет не найден");
-        data.put("ERROR_GROUP_NOT_FOUND","Группа не найдена");
-        data.put("ERROR_TIMETABLE_NOT_FOUND","Расписание не найдено");
+        data.put("ERROR_SUBJECT_NOT_FOUND","Предмет не найден!");
+        data.put("ERROR_GROUP_NOT_FOUND","Группа не найдена!");
+        data.put("ERROR_TIMETABLE_NOT_FOUND","Расписание не найдено!");
+        data.put("ERROR_TASK_NOT_FOUND","Тема не найдена!");
 
         data.put("ERROR_USER_EXISTS","Пользователь с таким логином уже существует!");
         data.put("ERROR_SUBJECT_EXISTS","Предмет с таким названием уже существует!");
@@ -64,7 +65,6 @@ public class Text {
         data.put("ERROR_AGE_MUST_BE_BETWEEN_0_100","Возраст должен быть в диапазоне 0-100!");
 
         data.put("ERROR_GROUP_CONTAINS_USER","Этот пользователь уже состоит в данной группе");
-
 
 
         data.put("YES","Да");
