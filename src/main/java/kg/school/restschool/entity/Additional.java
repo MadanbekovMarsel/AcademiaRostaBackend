@@ -1,7 +1,6 @@
 package kg.school.restschool.entity;
 
 import jakarta.persistence.*;
-import kg.school.restschool.entity.enums.ERole;
 import kg.school.restschool.entity.enums.Gender;
 import lombok.Data;
 import org.hibernate.annotations.Cascade;

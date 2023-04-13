@@ -69,7 +69,9 @@ public class GroupController {
 
         List<GroupDTO> responseGroups = new ArrayList<>();
         for(Group g : allGroups){
-            responseGroups.add(groupFacade.groupToGroupDTO(g));
+            GroupDTO groupDTO = groupFacade.groupToGroupDTO(g);
+            groupDTO.setTimetable(timeTableFacade.getTimeTableFacade(timeTableService.getTimetableByGroupName(groupDTO.getName())));
+            responseGroups.add(groupDTO);
         }
         return new ResponseEntity<>(responseGroups,HttpStatus.OK);
     }
@@ -103,7 +105,7 @@ public class GroupController {
             Timetable timetable = timeTableService.getTimetableByGroupName(groupName);
             return new ResponseEntity<>(timeTableFacade.getTimeTableFacade(timetable), HttpStatus.OK);
         } catch (SearchException e) {
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 //

@@ -8,6 +8,7 @@ import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -47,7 +48,7 @@ public class User implements UserDetails {
     private List<Group> groupsList = new ArrayList<>();
     @JsonFormat(pattern = "yyyy-mm-dd HH:mm:ss")
     @Column(updatable = false)
-    private LocalDate createdDate;
+    private Date createdDate;
 
     @Column
     @Email
@@ -58,7 +59,7 @@ public class User implements UserDetails {
 
     @PrePersist
     protected void onCreate(){
-        this.createdDate = LocalDate.now();
+        this.createdDate = Date.valueOf(LocalDate.now());
     }
 
     public User() {}

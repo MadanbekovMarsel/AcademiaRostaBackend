@@ -1,11 +1,13 @@
 package kg.school.restschool.services;
 
+import kg.school.restschool.dto.GroupDTO;
 import kg.school.restschool.dto.UserDTO;
 import kg.school.restschool.entity.Group;
 import kg.school.restschool.entity.User;
 import kg.school.restschool.entity.enums.ERole;
 import kg.school.restschool.exceptions.ExistException;
 import kg.school.restschool.exceptions.SearchException;
+import kg.school.restschool.facade.GroupFacade;
 import kg.school.restschool.facade.UserFacade;
 import kg.school.restschool.payload.request.SignUpRequest;
 import kg.school.restschool.repositories.GroupRepository;
@@ -29,13 +31,16 @@ public class UserService {
     private final GroupRepository groupRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private final GroupFacade groupFacade;
+
     private final UserFacade userFacade;
 
     @Autowired
-    public UserService(UserRepository userRepository, GroupRepository groupRepository, PasswordEncoder passwordEncoder, UserFacade userFacade) {
+    public UserService(UserRepository userRepository, GroupRepository groupRepository, PasswordEncoder passwordEncoder, GroupFacade groupFacade, UserFacade userFacade) {
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
         this.passwordEncoder = passwordEncoder;
+        this.groupFacade = groupFacade;
         this.userFacade = userFacade;
     }
 
@@ -140,5 +145,15 @@ public class UserService {
     private User getUserByPrincipal(Principal principal) {
         String username = principal.getName();
         return userRepository.findUserByUsername(username).orElseThrow(() -> new SearchException(SearchException.USER_NOT_FOUND));
+    }
+
+    public List<GroupDTO> getGroupsByUsername(String username) {
+        List<Group> groups = getUserByUsername(username).getGroupsList();
+
+        List<GroupDTO> response = new ArrayList<>();
+        for(Group current : groups){
+            response.add(groupFacade.groupToGroupDTO(current));
+        }
+        return response;
     }
 }

@@ -1,9 +1,11 @@
 package kg.school.restschool.web;
 
 import jakarta.validation.Valid;
+import kg.school.restschool.dto.GroupDTO;
 import kg.school.restschool.dto.UserDTO;
 import kg.school.restschool.entity.Group;
 import kg.school.restschool.entity.User;
+import kg.school.restschool.entity.enums.ERole;
 import kg.school.restschool.exceptions.SearchException;
 import kg.school.restschool.facade.GroupFacade;
 import kg.school.restschool.facade.UserFacade;
@@ -39,6 +41,11 @@ public class UserController {
         this.responseErrorValidation = responseErrorValidation;
     }
 
+    @GetMapping("/role")
+    public ResponseEntity<Object> getCurrentUsersRole(Principal principal){
+        User currentUser = userService.getCurrentUser(principal);
+        return new ResponseEntity<>(currentUser.getRole(),HttpStatus.OK);
+    }
     @GetMapping("/")
     public ResponseEntity<Object> getCurrentUser(Principal principal) {
         try {
@@ -46,28 +53,28 @@ public class UserController {
             UserDTO userDTO = userFacade.userToUserDTO(user);
             System.out.println("Im found " + userDTO.getFirstname());
             return new ResponseEntity<>(userDTO, HttpStatus.OK);
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             System.out.println("Searching failed!");
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.OK);
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.OK);
         }
     }
 
     @GetMapping("/pupils")
-    public ResponseEntity<Object> getAllPupils(){
+    public ResponseEntity<Object> getAllPupils() {
         List<UserDTO> pupils = userService.getAllPupils();
-        try{
-            return new ResponseEntity<>(pupils,HttpStatus.OK);
-        }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        try {
+            return new ResponseEntity<>(pupils, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("/teachers")
-    public ResponseEntity<Object> getAllTeachers(){
+    public ResponseEntity<Object> getAllTeachers() {
         List<UserDTO> teachers = userService.getAllTeachers();
-        try{
-            return new ResponseEntity<>(teachers,HttpStatus.OK);
-        }catch (RuntimeException e){
+        try {
+            return new ResponseEntity<>(teachers, HttpStatus.OK);
+        } catch (RuntimeException e) {
             return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
@@ -78,36 +85,47 @@ public class UserController {
             User user = userService.getUserById(Long.parseLong(idUser));
             List<Group> groups = user.getGroupsList();
             return new ResponseEntity<>(groups, HttpStatus.OK);
-        }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("/{groupId}/members")
-    public ResponseEntity<Object> getMembersOfGroup(@PathVariable("groupId") String groupId, Principal principal){
+    public ResponseEntity<Object> getMembersOfGroup(@PathVariable("groupId") String groupId, Principal principal) {
         try {
             System.out.println("Im looking for members");
             List<User> members = userService.getMembersOfGroup(Long.parseLong(groupId));
             List<UserDTO> responseMembers = new ArrayList<>();
-            User user = userService.getUserByUsername(principal.getName());
-
-            for(User u : members){
-                responseMembers.add(userFacade.userToUserDTO(u));
+            for (User u : members) {
+                if(u.getRole() == ERole.ROLE_PUPIL) responseMembers.add(userFacade.userToUserDTO(u));
             }
             return new ResponseEntity<>(responseMembers, HttpStatus.OK);
-        }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.NOT_FOUND);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/groups")
+    public ResponseEntity<Object> getGroupsOfUser(Principal principal) {
+        try {
+
+            List<GroupDTO> groups = userService.getGroupsByUsername(principal.getName());
+            return new ResponseEntity<>(groups,HttpStatus.OK);
+        }catch (RuntimeException e){
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDTO> getUserProfile(@PathVariable("userId") String userId){
+    public ResponseEntity<UserDTO> getUserProfile(@PathVariable("userId") String userId) {
         User user = userService.getUserById(Long.parseLong(userId));
         UserDTO userDTO = userFacade.userToUserDTO(user);
-        return new ResponseEntity<>(userDTO,HttpStatus.OK);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @PatchMapping("/")
-    public ResponseEntity<Object> updateUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult,Principal principal) throws SearchException {
+    public ResponseEntity<Object> updateUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult, Principal principal) throws SearchException {
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
 
@@ -115,8 +133,8 @@ public class UserController {
             User user = userService.userUpdate(userDTO, principal);
             UserDTO userUpdated = userFacade.userToUserDTO(user);
             return new ResponseEntity<>(userUpdated, HttpStatus.OK);
-        }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 }

@@ -85,6 +85,7 @@ public class GroupService {
     }
 
 
+
     public Group addUserToGroupById(Long groupId, UserDTO userDTO) {
         User user = getUserByUsername(userDTO.getUsername());
         Group group = getGroupById(groupId);

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import kg.school.restschool.entity.enums.Topic;
 import lombok.Data;
 
+import java.sql.Date;
 import java.time.LocalDate;
 
 @Data
@@ -15,10 +16,10 @@ public class Mark {
     private Long id;
 
     @Column(name = "correct_ans")
-    private int correctAns;
+    private int correctAnswers;
 
     @Column(name = "total_ques")
-    private int totalQues;
+    private int totalQuestions;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
@@ -27,10 +28,5 @@ public class Mark {
     @Enumerated(EnumType.STRING)
     private Topic topic;
     @Column(name = "date",nullable = false)
-    private LocalDate createdDate;
-
-    @PrePersist
-    public void onCreate(){
-        this.createdDate = LocalDate.now();
-    }
+    private Date createdDate;
 }

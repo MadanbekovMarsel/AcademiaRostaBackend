@@ -5,18 +5,18 @@ import jakarta.validation.constraints.NotEmpty;
 import kg.school.restschool.entity.enums.Topic;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.sql.Date;
 
 @Data
 public class MarkDTO {
 
     private Long id;
     @NotEmpty
-    private int correctAns;
+    private int correctAnswers;
     @NotEmpty
-    private int totalQuest;
+    private int totalQuestions;
     @NotEmpty
     private Topic topic;
     @NotEmpty
-    private LocalDate date;
+    private Date date;
 }
