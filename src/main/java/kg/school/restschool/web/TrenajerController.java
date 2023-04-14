@@ -12,28 +12,26 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/api/trenajer")
 public class TrenajerController {
 
     private final TrenajerService trenajerService;
-    private final MarkService markService;
-    private final ResponseErrorValidation responseErrorValidation;
-
     @Autowired
     public TrenajerController(TrenajerService trenajerService, MarkService markService, ResponseErrorValidation responseErrorValidation) {
         this.trenajerService = trenajerService;
-        this.markService = markService;
-        this.responseErrorValidation = responseErrorValidation;
     }
 
-    @GetMapping("/{taskName}/{digits}/{count}")
+    @GetMapping("/{taskName}/{digits}/{count}/{arrayCount}")
     public ResponseEntity<Object> getArray(@PathVariable("taskName") String taskName,
                                            @PathVariable("digits") String digits,
-                                           @PathVariable("count") String count) {
+                                           @PathVariable("count") String count,
+                                           @PathVariable("arrayCount") String arrayCount) {
         try {
-            int[] res = trenajerService.getArray(taskName,Integer.parseInt(digits),Integer.parseInt(count));
+            List<int[]> res = trenajerService.getArray(taskName,Integer.parseInt(digits),Integer.parseInt(count),Integer.parseInt(arrayCount));
             return new ResponseEntity<>(res, HttpStatus.OK);
         }catch (RuntimeException e){
             return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
