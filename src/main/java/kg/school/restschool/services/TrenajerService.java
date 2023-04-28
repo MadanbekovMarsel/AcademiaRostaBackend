@@ -2,6 +2,12 @@ package kg.school.restschool.services;
 
 import kg.school.restschool.rostAbacus.Generatable;
 import kg.school.restschool.rostAbacus.pb.*;
+import kg.school.restschool.rostAbacus.pb.PlusFour;
+import kg.school.restschool.rostAbacus.pb.PlusOne;
+import kg.school.restschool.rostAbacus.pb.PlusThree;
+import kg.school.restschool.rostAbacus.pb.PlusTwo;
+import kg.school.restschool.rostAbacus.pd.*;
+import kg.school.restschool.rostAbacus.psv.PSV;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -59,7 +65,16 @@ public class TrenajerService {
             case "PB-2" -> new MinusTwo();
             case "PB-3" -> new MinusThree();
             case "PB-4" -> new MinusFour();
-            default -> new PlusOne();
+            case "PD+1" -> new kg.school.restschool.rostAbacus.pd.PlusOne();
+            case "PD+2" -> new kg.school.restschool.rostAbacus.pd.PlusTwo();
+            case "PD+3" -> new kg.school.restschool.rostAbacus.pd.PlusThree();
+            case "PD+4" -> new kg.school.restschool.rostAbacus.pd.PlusFour();
+            case "PD+5" -> new PlusFive();
+            case "PD+6" -> new PlusSix();
+            case "PD+7" -> new PlusSeven();
+            case "PD+8" -> new PlusEight();
+            case "PD+9" -> new PlusNine();
+            default -> new PSV();
         };
 
     }

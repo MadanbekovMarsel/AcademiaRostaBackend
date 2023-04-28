@@ -7,8 +7,10 @@ import kg.school.restschool.entity.Group;
 import kg.school.restschool.entity.Subject;
 import kg.school.restschool.entity.Timetable;
 import kg.school.restschool.entity.User;
+import kg.school.restschool.entity.enums.ERole;
 import kg.school.restschool.exceptions.ExistException;
 import kg.school.restschool.exceptions.SearchException;
+import kg.school.restschool.facade.GroupFacade;
 import kg.school.restschool.repositories.GroupRepository;
 import kg.school.restschool.repositories.SubjectRepository;
 import kg.school.restschool.repositories.TimeTableRepository;
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,24 +31,26 @@ public class GroupService {
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
     private final GroupRepository groupRepository;
+    private final GroupFacade groupFacade;
 
     private final TimeTableRepository timeTableRepository;
 
     @Autowired
-    public GroupService(UserRepository userRepository, SubjectRepository subjectRepository, GroupRepository groupRepository, TimeTableRepository timeTableRepository) {
+    public GroupService(UserRepository userRepository, SubjectRepository subjectRepository, GroupRepository groupRepository, GroupFacade groupFacade, TimeTableRepository timeTableRepository) {
         this.userRepository = userRepository;
         this.subjectRepository = subjectRepository;
         this.groupRepository = groupRepository;
+        this.groupFacade = groupFacade;
         this.timeTableRepository = timeTableRepository;
     }
 
-    public Group defaultGroupCreator(GroupDTO groupToCreate){
+    public Group defaultGroupCreator(GroupDTO groupToCreate) {
         Group createdGroup = new Group();
         Subject subject = null;
-        if(groupToCreate.getSubject() != null){
+        if (groupToCreate.getSubject() != null) {
             subject = getSubjectByName(groupToCreate.getSubject().getName());
         }
-        if(groupToCreate.getTimetable() != null){
+        if (groupToCreate.getTimetable() != null) {
             Timetable timetable = new Timetable();
             TimetableDTO timetableDTO = groupToCreate.getTimetable();
             timetable.setMonday(timetableDTO.getMonday());
@@ -64,26 +69,34 @@ public class GroupService {
 
         return groupRepository.save(createdGroup);
     }
-    public Group createGroup(GroupDTO groupDTO){
+
+    public Group createGroup(GroupDTO groupDTO) {
         Group group = new Group();
         group.setName(groupDTO.getName());
+        System.out.println(groupDTO.getTeacher().getUsername());
         Subject subject = null;
-        if(groupDTO.getSubject() != null){
-            subject = getSubjectByName(groupDTO.getSubject().getName());
+        User teacher = null;
+        if (groupDTO.getSubject() != null) subject = getSubjectByName(groupDTO.getSubject().getName());
+        if (groupDTO.getTeacher() != null) {
+            teacher = getUserByUsername(groupDTO.getTeacher().getUsername());
+            teacher.addGroup(group);
         }
         group.setSubject(subject);
+        group.addUser(teacher);
         try {
-            LOG.info("Saving group {}",group.getName());
-            return groupRepository.save(group);
-        }catch (Exception e){
-            LOG.error("ERROR during registration. {}",e.getMessage());
+            LOG.info("Saving group {}", group.getName());
+            Group g = groupRepository.save(group);
+            if (teacher != null) userRepository.save(teacher);
+            return g;
+        } catch (Exception e) {
+            LOG.error("ERROR during registration. {}", e.getMessage());
             throw new ExistException(ExistException.GROUP_EXISTS);
         }
     }
-    public List<Group> getAllGroups(){
+
+    public List<Group> getAllGroups() {
         return groupRepository.findAll();
     }
-
 
 
     public Group addUserToGroupById(Long groupId, UserDTO userDTO) {
@@ -93,12 +106,12 @@ public class GroupService {
             group.getMembers().add(user);
             groupRepository.save(group);
             return group;
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ExistException(ExistException.GROUP_CONTAINS_USER);
         }
     }
 
-//    public Group setTimetableToGroup(TimetableDTO timetableDTO, String groupName){
+    //    public Group setTimetableToGroup(TimetableDTO timetableDTO, String groupName){
 //        Group group = getGroupByName(groupName);
 //        Timetable timetable = timeTableRepository.findByGroup(group).orElse(new Timetable());
 //
@@ -113,14 +126,14 @@ public class GroupService {
 //        timeTableRepository.save(timetable);
 //        return groupRepository.save(group);
 //    }
-    public Group setSubjectForGroup(String groupName, String subjectName){
+    public Group setSubjectForGroup(String groupName, String subjectName) {
         Group group = getGroupByName(groupName);
         Subject subject = getSubjectByName(subjectName);
         group.setSubject(subject);
         return groupRepository.save(group);
     }
 
-    public Group removeUserFromGroup(String groupName, String username){
+    public Group removeUserFromGroup(String groupName, String username) {
         User userToRemove = getUserByUsername(username);
         Group removeFrom = getGroupByName(groupName);
         removeFrom.getMembers().remove(userToRemove);
@@ -132,45 +145,85 @@ public class GroupService {
     public Group updateGroup(Long idGroup, GroupDTO groupDTO) {
         Group group = getGroupById(idGroup);
         Subject subject = null;
-        if(groupDTO.getSubject() != null){
+        if (groupDTO.getSubject() != null) {
             subject = getSubjectByName(groupDTO.getSubject().getName());
         }
         group.setSubject(subject);
         return groupRepository.save(group);
     }
 
-    public Group addUserToGroup(String username, String groupName){
+    public Group addUserToGroup(String username, String groupName) {
         Group group = getGroupByName(groupName);
         User user = getUserByUsername(username);
-        try{
+        try {
             group.addUser(user);
             return groupRepository.save(group);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ExistException(ExistException.USER_EXISTS);
         }
     }
 
-    public List<Group> getGroupsByUsername(String username){
+    public Group setTeacherToGroup(String username, String groupname) {
+        try {
+            Group group = getGroupByName(groupname);
+            User toDelete = group.getTeacher();
+            if(toDelete != null) removeUserFromGroup(groupname,toDelete.getUsername());
+            System.out.println("im going to add a new teacher!");
+            User teacher = getUserByUsername(username);
+            teacher.addGroup(group);
+            group.addUser(teacher);
+            System.out.println("adding new teacher");
+            userRepository.save(teacher);
+            return groupRepository.save(group);
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<GroupDTO> getGroupsByUsername(String username) {
         User user = getUserByUsername(username);
-        return user.getGroupsList();
+        List<GroupDTO> res = new ArrayList<>();
+        if (user.getRole() == ERole.ROLE_ADMIN) {
+            for (Group g : getAllGroups()) {
+                res.add(groupFacade.groupToGroupDTO(g));
+            }
+        } else {
+            for (Group g : user.getGroupsList()) {
+                res.add(groupFacade.groupToGroupDTO(g));
+            }
+        }
+        return res;
     }
 
     //Get Methods
 
     public Subject getSubjectById(Long subjectId) {
-        return subjectRepository.findSubjectById(subjectId).orElseThrow(()->new SearchException(SearchException.SUBJECT_NOT_FOUND));
-    }
-    private Subject getSubjectByName(String subjectName) {
-        return subjectRepository.findSubjectByName(subjectName).orElseThrow(()->new SearchException(SearchException.SUBJECT_NOT_FOUND));
-    }
-    public Group getGroupByName(String name)  {
-        return groupRepository.findGroupsByName(name).orElseThrow(() -> new SearchException(SearchException.GROUP_NOT_FOUND));
-    }
-    public Group getGroupById(Long id) {
-        return groupRepository.findById(id).orElseThrow(()->new SearchException(SearchException.GROUP_NOT_FOUND));
+        return subjectRepository.findSubjectById(subjectId).orElseThrow(() -> new SearchException(SearchException.SUBJECT_NOT_FOUND));
     }
 
-    private User getUserByUsername(String username){
+    private Subject getSubjectByName(String subjectName) {
+        return subjectRepository.findSubjectByName(subjectName).orElseThrow(() -> new SearchException(SearchException.SUBJECT_NOT_FOUND));
+    }
+
+    public Group getGroupByName(String name) {
+        return groupRepository.findGroupsByName(name).orElseThrow(() -> new SearchException(SearchException.GROUP_NOT_FOUND));
+    }
+
+    public Group getGroupById(Long id) {
+        return groupRepository.findById(id).orElseThrow(() -> new SearchException(SearchException.GROUP_NOT_FOUND));
+    }
+
+    private User getUserByUsername(String username) {
         return userRepository.findUserByUsername(username).orElseThrow(() -> new SearchException(SearchException.USER_NOT_FOUND));
+    }
+
+    public void deleteGroup(String groupName) {
+        try{
+            Group group = getGroupByName(groupName);
+            groupRepository.delete(group);
+        }catch (RuntimeException e){
+            throw new SearchException(SearchException.GROUP_NOT_FOUND);
+        }
     }
 }

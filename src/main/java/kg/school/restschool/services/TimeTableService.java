@@ -7,6 +7,7 @@ import kg.school.restschool.exceptions.SearchException;
 import kg.school.restschool.repositories.GroupRepository;
 import kg.school.restschool.repositories.TimeTableRepository;
 
+import kg.school.restschool.validations.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class TimeTableService {
     private final GroupRepository groupRepository;
 
     @Autowired
-    public TimeTableService(TimeTableRepository timeTableRepository, GroupRepository groupRepository) {
+    public TimeTableService(TimeTableRepository timeTableRepository, GroupRepository groupRepository, Validator validator) {
         this.timeTableRepository = timeTableRepository;
         this.groupRepository = groupRepository;
     }
@@ -28,16 +29,47 @@ public class TimeTableService {
     public Timetable createTimetableToGroup(TimetableDTO timetableDTO, String groupName) {
         Timetable timetable = new Timetable();
 
+        boolean empty = true;
         Group group = getGroupByName(groupName);
-        timetable.setMonday(timetableDTO.getMonday());
-        timetable.setTuesday(timetableDTO.getTuesday());
-        timetable.setWednesday(timetableDTO.getWednesday());
-        timetable.setThursday(timetableDTO.getThursday());
-        timetable.setFriday(timetableDTO.getFriday());
-        timetable.setSunday(timetableDTO.getSunday());
-        timetable.setSaturday(timetableDTO.getSaturday());
-        timetable.setGroup(group);
+        if(Validator.validTime(timetableDTO.getMonday()) != null){
+            timetable.setMonday(Validator.validTime(timetableDTO.getMonday()));
+            empty = false;
+        }
+        if(Validator.validTime(timetableDTO.getTuesday()) != null){
+            timetable.setTuesday(Validator.validTime(timetableDTO.getTuesday()));
+            empty = false;
+        }
+        if(Validator.validTime(timetableDTO.getWednesday()) != null){
+            timetable.setWednesday(Validator.validTime(timetableDTO.getWednesday()));
+            empty = false;
+        }
+        if(Validator.validTime(timetableDTO.getThursday()) != null){
+            timetable.setThursday(Validator.validTime(timetableDTO.getThursday()));
+            empty = false;
+        }
+        if(Validator.validTime(timetableDTO.getFriday()) != null){
+            timetable.setFriday(Validator.validTime(timetableDTO.getFriday()));
+            empty = false;
+        }
+        if(Validator.validTime(timetableDTO.getSaturday()) != null){
+            timetable.setSaturday(Validator.validTime(timetableDTO.getSaturday()));
+            empty = false;
+        }
+        if(Validator.validTime(timetableDTO.getSunday()) != null){
+            timetable.setSunday(Validator.validTime(timetableDTO.getSunday()));
+            empty = false;
+        }
+
+        System.out.println(timetableDTO.getMonday());
+        System.out.println(timetableDTO.getTuesday());
+        System.out.println(timetableDTO.getWednesday());
+        System.out.println(timetableDTO.getThursday());
+        System.out.println(timetableDTO.getFriday());
+        System.out.println(timetableDTO.getSaturday());
+        System.out.println(timetableDTO.getSunday());
+        if(empty)   throw new RuntimeException("Empty timetable!");
         try{
+            timetable.setGroup(group);
             LOG.info("Saving timetable of group " + group.getName());
             return timeTableRepository.save(timetable);
         }catch (Exception e){

@@ -10,6 +10,6 @@ public class GroupDTO {
     @NotEmpty
     private String name;
     private SubjectDTO subject;
-    private String teacher;
+    private UserDTO teacher;
     private TimetableDTO timetable;
 }

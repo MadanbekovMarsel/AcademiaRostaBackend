@@ -52,9 +52,14 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(userIn.getPassword()));
         user.setAge(userIn.getAge());
         user.setEmail(userIn.getEmail());
-        System.out.println(userIn.getEmail());
         user.setFathersName(userIn.getFathersName());
-        user.setRole(ERole.ROLE_PUPIL);
+
+        if ((userIn.getRole() != null)) {
+            user.setRole(userIn.getRole());
+        } else {
+            user.setRole(ERole.ROLE_PUPIL);
+        }
+
         try {
             LOG.info("Saving User {}",userIn.getUsername());
             return userRepository.save(user);

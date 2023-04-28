@@ -3,7 +3,6 @@ package kg.school.restschool.web;
 import jakarta.validation.Valid;
 import kg.school.restschool.dto.GroupDTO;
 import kg.school.restschool.dto.TimetableDTO;
-import kg.school.restschool.dto.UserDTO;
 import kg.school.restschool.entity.Group;
 import kg.school.restschool.entity.Timetable;
 import kg.school.restschool.exceptions.SearchException;
@@ -63,6 +62,16 @@ public class GroupController {
         }
     }
 
+    @GetMapping("/{username}/groups")
+    public ResponseEntity<Object> getGroupsByUser(@PathVariable("username")String username){
+        try {
+            List<GroupDTO> response = groupService.getGroupsByUsername(username);
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }catch (RuntimeException e){
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @GetMapping("/all")
     public ResponseEntity<Object> getAllGroups(){
         List<Group> allGroups = groupService.getAllGroups();
@@ -79,11 +88,7 @@ public class GroupController {
     @GetMapping("/")
     public ResponseEntity<Object> getCurrentUsersGroups(Principal principal) {
         try {
-            List<Group> groups = groupService.getGroupsByUsername(principal.getName());
-            List<GroupDTO> groupDTOS = new ArrayList<>();
-            for (Group currentGroup : groups) {
-                groupDTOS.add(groupFacade.groupToGroupDTO(currentGroup));
-            }
+            List<GroupDTO> groupDTOS = groupService.getGroupsByUsername(principal.getName());
             return new ResponseEntity<>(groupDTOS, HttpStatus.OK);
         }catch (RuntimeException e){
             return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.NOT_FOUND);
@@ -109,15 +114,15 @@ public class GroupController {
         }
     }
 //
-//    @GetMapping("/{name}")
-//    public ResponseEntity<Object> getGroupByName(@PathVariable("name") String name) {
-//        try {
-//            Group group = groupService.getGroupByName(name);
-//            return new ResponseEntity<>(groupFacade.groupToGroupDTO(group), HttpStatus.OK);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.NOT_FOUND);
-//        }
-//    }
+    @GetMapping("/{name}/byName")
+    public ResponseEntity<Object> getGroupByName(@PathVariable("name") String name) {
+        try {
+            Group group = groupService.getGroupByName(name);
+            return new ResponseEntity<>(groupFacade.groupToGroupDTO(group), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.NOT_FOUND);
+        }
+    }
 
     @PatchMapping("/{idGroup}/update")
     public ResponseEntity<Object> updateGroupById(@Valid @RequestBody GroupDTO groupDTO,
@@ -139,9 +144,19 @@ public class GroupController {
         try {
             Group group = groupService.addUserToGroup(username, groupName);
             userService.addGroupToUser(username, groupName);
-
             GroupDTO groupDTO = groupFacade.groupToGroupDTO(group);
             return new ResponseEntity<>(groupDTO, HttpStatus.OK);
+        }catch (RuntimeException e){
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PatchMapping("{groupName}/{username}/setTeacher")
+    public ResponseEntity<Object> setTeacherToGroup(@PathVariable("username") String username,
+                                                    @PathVariable("groupName") String groupName){
+        try{
+            GroupDTO groupDTO = groupFacade.groupToGroupDTO(this.groupService.setTeacherToGroup(username,groupName));
+            return new ResponseEntity<>(groupDTO,HttpStatus.OK);
         }catch (RuntimeException e){
             return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
@@ -153,29 +168,34 @@ public class GroupController {
                                                     @PathVariable("subjectName") String subjectName) {
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
-
         try {
             Group group = groupService.setSubjectForGroup(groupDTO.getName(), subjectName);
             return new ResponseEntity<>(groupFacade.groupToGroupDTO(group), HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.OK);
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @PatchMapping("/{groupName}/remove")
-    public ResponseEntity<Object> removeUserFromGroup(@RequestBody UserDTO userDTO,
-                                                      BindingResult bindingResult,
+    @PatchMapping("/{groupName}/{username}/remove")
+    public ResponseEntity<Object> removeUserFromGroup(@PathVariable("username") String username,
                                                       @PathVariable("groupName") String groupName) {
-        ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
-        if (!ObjectUtils.isEmpty(errors)) return errors;
-
         Group group = null;
         try {
-            group = groupService.removeUserFromGroup(groupName, userDTO.getUsername());
+            group = groupService.removeUserFromGroup(groupName, username);
         } catch (SearchException e) {
             throw new RuntimeException(e);
         }
         return new ResponseEntity<>(groupFacade.groupToGroupDTO(group), HttpStatus.OK);
+    }
+
+    @DeleteMapping("{groupName}/delete")
+    public ResponseEntity<Object> deleteGroup(@PathVariable("groupName") String groupname){
+        try{
+            groupService.deleteGroup(groupname);
+            return new ResponseEntity<>(new MessageResponse("OK"),HttpStatus.OK);
+        }catch (RuntimeException e){
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PatchMapping("/{groupName}/setTimetable")

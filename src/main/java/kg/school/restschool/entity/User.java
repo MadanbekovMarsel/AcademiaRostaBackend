@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import kg.school.restschool.entity.enums.ERole;
+import kg.school.restschool.entity.enums.Gender;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,6 +42,15 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private ERole role;
 
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "gender")
+    private Gender gender;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "User_Group",
                 joinColumns = @JoinColumn(name = "id_user"),
@@ -71,9 +81,7 @@ public class User implements UserDetails {
         this.authorities = authorities;
     }
 
-    public void addGroup(Group group){
-        groupsList.add(group);
-    }
+    public void addGroup(Group group){groupsList.add(group);}
     @Override
     public String getPassword(){
         return password;

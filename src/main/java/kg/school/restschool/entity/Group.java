@@ -8,6 +8,7 @@ import org.hibernate.annotations.CascadeType;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -43,6 +44,7 @@ public class Group {
         return null;
     }
     public boolean addUser(User user){
-       return members.add(user);
+        if(members == null) members = new ArrayList<>();
+        return members.add(user);
     }
 }

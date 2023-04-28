@@ -15,6 +15,8 @@ public class UserFacade {
         userDTO.setRole(user.getRole().toString());
         userDTO.setUsername(user.getUsername());
         userDTO.setAge(user.getAge());
+        userDTO.setPhoneNumber(user.getPhoneNumber());
+        userDTO.setAddress(user.getAddress());
         return userDTO;
     }
 }
