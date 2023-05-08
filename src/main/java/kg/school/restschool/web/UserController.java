@@ -16,6 +16,7 @@ import kg.school.restschool.validations.ResponseErrorValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -58,7 +59,7 @@ public class UserController {
             return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.OK);
         }
     }
-
+    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_TEACHER')")
     @GetMapping("/pupils")
     public ResponseEntity<Object> getAllPupils() {
         List<UserDTO> pupils = userService.getAllPupils();
@@ -124,6 +125,7 @@ public class UserController {
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/")
     public ResponseEntity<Object> updateUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult, Principal principal) throws SearchException {
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);

@@ -16,7 +16,7 @@ public class MarkDTO {
     @NotEmpty
     private int totalQuestions;
     @NotEmpty
-    private Topic topic;
+    private String topic;
     @NotEmpty
     private Date date;
 }

@@ -6,12 +6,14 @@ import kg.school.restschool.entity.Group;
 import kg.school.restschool.entity.User;
 import kg.school.restschool.entity.enums.ERole;
 import kg.school.restschool.exceptions.ExistException;
+import kg.school.restschool.exceptions.InvalidDataException;
 import kg.school.restschool.exceptions.SearchException;
 import kg.school.restschool.facade.GroupFacade;
 import kg.school.restschool.facade.UserFacade;
 import kg.school.restschool.payload.request.SignUpRequest;
 import kg.school.restschool.repositories.GroupRepository;
 import kg.school.restschool.repositories.UserRepository;
+import kg.school.restschool.validations.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,18 +48,30 @@ public class UserService {
 
     public User createUser(SignUpRequest userIn){
         User user = new User();
-        user.setFirstName(userIn.getFirstname());
-        user.setLastName(userIn.getLastname());
-        user.setUsername(userIn.getUsername());
-        user.setPassword(passwordEncoder.encode(userIn.getPassword()));
-        user.setAge(userIn.getAge());
-        user.setEmail(userIn.getEmail());
-        user.setFathersName(userIn.getFathersName());
 
-        if ((userIn.getRole() != null)) {
-            user.setRole(userIn.getRole());
-        } else {
-            user.setRole(ERole.ROLE_PUPIL);
+        try{
+            user.setFirstName(Validator.validName(userIn.getFirstname()));
+            user.setLastName(Validator.validName(userIn.getLastname()));
+            user.setFathersName(Validator.validName(userIn.getFathersName()));
+            user.setEmail(userIn.getEmail());
+            user.setUsername(userIn.getUsername());
+            user.setPassword(passwordEncoder.encode(userIn.getPassword()));
+            System.out.println(userIn.getPassword() + " == " + userIn.getConfirmPassword());
+
+            System.out.println(userIn.getPhoneNumber() + " -> valid -> " + Validator.validNumber(userIn.getPhoneNumber()));
+            user.setPhoneNumber(Validator.validNumber(userIn.getPhoneNumber()));
+            user.setAddress(userIn.getAddress());
+            user.setAge(userIn.getAge());
+            user.setGender(userIn.getGender());
+            System.out.println("User to register " + user.getUsername() + " his role " + userIn.getRole());
+            if ((userIn.getRole() != null)) {
+                user.setRole(userIn.getRole());
+            } else {
+                user.setRole(ERole.ROLE_PUPIL);
+            }
+        } catch (InvalidDataException e) {
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
 
         try {

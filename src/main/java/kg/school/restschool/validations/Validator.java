@@ -1,5 +1,8 @@
 package kg.school.restschool.validations;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import kg.school.restschool.exceptions.InvalidDataException;
+import kg.school.restschool.services.CustomUserDetailsService;
 import kg.school.restschool.settings.Templates;
 import kg.school.restschool.settings.Text;
 import org.springframework.stereotype.Component;
@@ -7,31 +10,20 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class Validator {
-
-    public static void main(String[] args) {
-        Templates.init();
-//        String s = "70933497";
-//        System.out.println(validNumber(s));
-
-//        String time = "1:9";
-//        System.out.println(validTime(time));
-
-        String name = "marSeL1";
-        System.out.println(validName(name));
-    }
-
-    public static String validNumber(String number) {
+    public static String validNumber(String number) throws InvalidDataException {
+        if(number == null)  return null;
+        number = number.replaceAll(" ", "");
         for (String prefix : Templates.numberPrefixes) {
             if (number.startsWith(prefix)) {
                 number = number.substring(prefix.length());
-                number = number.replaceAll(" ", "");
+                break;
             }
         }
-        if (number.length() != Templates.numberBody.replaceAll(" ","").length()) return null;
+        if (number.length() != Templates.numberBody.replaceAll(" ","").length()) throw new InvalidDataException(InvalidDataException.INVALID_PHONE_NUMBER);
         StringBuilder validN = new StringBuilder(Templates.numberPrefixes.get(1) + " ");
         int i = 0;
         for (char c : Templates.numberBody.toCharArray()) {
-            if(!Character.isDigit(number.charAt(i)))    return null;
+            if(!Character.isDigit(number.charAt(i)))    throw new InvalidDataException(InvalidDataException.INVALID_PHONE_NUMBER);
             validN.append((Character.isLetter(c)) ? number.charAt(i++) : ' ');
         }
         return validN.toString();
@@ -56,9 +48,11 @@ public class Validator {
         return validT.toString();
     }
 
-    public static String validName(String name) {
+    public static String validName(String name) throws InvalidDataException {
+        name = name.trim();
+        if(name.length() == 0)  throw new InvalidDataException(InvalidDataException.EMPTY_NAME);
         for(char c : name.toCharArray())
-            if(!Character.isLetter(c))  return null;
+            if(!Character.isLetter(c))  throw new InvalidDataException(InvalidDataException.INVALID_NAME);
         return name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
     }
 }

@@ -10,10 +10,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -28,6 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username){
         User user = userRepository.findUserByUsername(username).orElseThrow(() -> new SearchException(SearchException.USER_NOT_FOUND));
+        System.out.println(user.getUsername() + " => role => " + user.getRole());
         return build(user);
     }
 
@@ -36,7 +35,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     public static User build(User user){
-        List<GrantedAuthority> authorities = new ArrayList<>(user.getRole().ordinal());
-        return new User(user.getId(),user.getUsername(),user.getPassword(),authorities);
+        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getRole().toString()));
+
+        return new User(
+                user.getId(),
+                user.getUsername(),
+                user.getPassword()
+        );
     }
 }

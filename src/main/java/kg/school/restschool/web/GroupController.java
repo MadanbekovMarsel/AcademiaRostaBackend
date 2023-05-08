@@ -17,6 +17,8 @@ import kg.school.restschool.validations.ResponseErrorValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -48,41 +50,48 @@ public class GroupController {
         this.responseErrorValidation = responseErrorValidation;
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/create")
-    public ResponseEntity<Object> createGroup(@Valid @RequestBody GroupDTO groupDTO,
+    public ResponseEntity<Object> createGroup(Authentication authentication,
+                                              @Valid @RequestBody GroupDTO groupDTO,
                                               BindingResult bindingResult) {
-        System.out.println("hello there is request to create group");
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
         try {
             Group created = groupService.createGroup(groupDTO);
             return new ResponseEntity<>(groupFacade.groupToGroupDTO(created), HttpStatus.OK);
-        }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("/{username}/groups")
-    public ResponseEntity<Object> getGroupsByUser(@PathVariable("username")String username){
+    public ResponseEntity<Object> getGroupsByUser(@PathVariable("username") String username) {
         try {
             List<GroupDTO> response = groupService.getGroupsByUsername(username);
-            return new ResponseEntity<>(response,HttpStatus.OK);
-        }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/all")
-    public ResponseEntity<Object> getAllGroups(){
-        List<Group> allGroups = groupService.getAllGroups();
+    public ResponseEntity<Object> getAllGroups() {
+        try {
+            List<Group> allGroups = groupService.getAllGroups();
 
-        List<GroupDTO> responseGroups = new ArrayList<>();
-        for(Group g : allGroups){
-            GroupDTO groupDTO = groupFacade.groupToGroupDTO(g);
-            groupDTO.setTimetable(timeTableFacade.getTimeTableFacade(timeTableService.getTimetableByGroupName(groupDTO.getName())));
-            responseGroups.add(groupDTO);
+            List<GroupDTO> responseGroups = new ArrayList<>();
+            for (Group g : allGroups) {
+                GroupDTO groupDTO = groupFacade.groupToGroupDTO(g);
+                groupDTO.setTimetable(timeTableFacade.getTimeTableFacade(timeTableService.getTimetableByGroupName(groupDTO.getName())));
+                responseGroups.add(groupDTO);
+            }
+            return new ResponseEntity<>(responseGroups, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(responseGroups,HttpStatus.OK);
     }
 
     @GetMapping("/")
@@ -90,10 +99,12 @@ public class GroupController {
         try {
             List<GroupDTO> groupDTOS = groupService.getGroupsByUsername(principal.getName());
             return new ResponseEntity<>(groupDTOS, HttpStatus.OK);
-        }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.NOT_FOUND);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.NOT_FOUND);
         }
     }
+
+
     @GetMapping("/{idGroup}")
     public ResponseEntity<Object> getGroupById(@PathVariable("idGroup") String idGroup) {
         try {
@@ -104,6 +115,7 @@ public class GroupController {
         }
     }
 
+
     @GetMapping("/{groupName}/timetable")
     public ResponseEntity<Object> getTimetableForGroup(@PathVariable("groupName") String groupName) {
         try {
@@ -113,7 +125,8 @@ public class GroupController {
             return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
-//
+
+    //
     @GetMapping("/{name}/byName")
     public ResponseEntity<Object> getGroupByName(@PathVariable("name") String name) {
         try {
@@ -124,6 +137,7 @@ public class GroupController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/{idGroup}/update")
     public ResponseEntity<Object> updateGroupById(@Valid @RequestBody GroupDTO groupDTO,
                                                   @PathVariable("idGroup") String idGroup, BindingResult bindingResult) {
@@ -138,6 +152,7 @@ public class GroupController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/{groupName}/{username}/add")
     public ResponseEntity<Object> addUserToGroup(@PathVariable("username") String username,
                                                  @PathVariable("groupName") String groupName) {
@@ -146,23 +161,25 @@ public class GroupController {
             userService.addGroupToUser(username, groupName);
             GroupDTO groupDTO = groupFacade.groupToGroupDTO(group);
             return new ResponseEntity<>(groupDTO, HttpStatus.OK);
-        }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("{groupName}/{username}/setTeacher")
     public ResponseEntity<Object> setTeacherToGroup(@PathVariable("username") String username,
-                                                    @PathVariable("groupName") String groupName){
-        try{
-            GroupDTO groupDTO = groupFacade.groupToGroupDTO(this.groupService.setTeacherToGroup(username,groupName));
-            return new ResponseEntity<>(groupDTO,HttpStatus.OK);
-        }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+                                                    @PathVariable("groupName") String groupName) {
+        try {
+            GroupDTO groupDTO = groupFacade.groupToGroupDTO(this.groupService.setTeacherToGroup(username, groupName));
+            return new ResponseEntity<>(groupDTO, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @PatchMapping("/{subjectName}/set")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PatchMapping("/{subjectName}/setSubject")
     public ResponseEntity<Object> setSubjectToGroup(@RequestBody GroupDTO groupDTO,
                                                     BindingResult bindingResult,
                                                     @PathVariable("subjectName") String subjectName) {
@@ -176,6 +193,7 @@ public class GroupController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/{groupName}/{username}/remove")
     public ResponseEntity<Object> removeUserFromGroup(@PathVariable("username") String username,
                                                       @PathVariable("groupName") String groupName) {
@@ -188,16 +206,18 @@ public class GroupController {
         return new ResponseEntity<>(groupFacade.groupToGroupDTO(group), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("{groupName}/delete")
-    public ResponseEntity<Object> deleteGroup(@PathVariable("groupName") String groupname){
-        try{
+    public ResponseEntity<Object> deleteGroup(@PathVariable("groupName") String groupname) {
+        try {
             groupService.deleteGroup(groupname);
-            return new ResponseEntity<>(new MessageResponse("OK"),HttpStatus.OK);
-        }catch (RuntimeException e){
-            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new MessageResponse("OK"), HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/{groupName}/setTimetable")
     public ResponseEntity<Object> setTimetableToGroup(@RequestBody TimetableDTO timetableDTO,
                                                       BindingResult bindingResult,

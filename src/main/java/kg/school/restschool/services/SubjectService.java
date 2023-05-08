@@ -56,7 +56,7 @@ public class SubjectService {
         return subjectRepository.findAll();
     }
 
-    public void deleteSubjectById(Long idSubject) {
-        subjectRepository.deleteById(idSubject);
+    public void deleteSubjectByName(String subjectName) {
+        subjectRepository.delete(getSubjectByName(subjectName));
     }
 }

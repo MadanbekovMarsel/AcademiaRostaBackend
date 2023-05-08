@@ -14,6 +14,7 @@ import kg.school.restschool.validations.ResponseErrorValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,12 +23,9 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
-
 @CrossOrigin
 @RestController
 @RequestMapping("/api/auth")
-//@PreAuthorize("permitAll()")
 public class AuthController {
 
 //    private final EmailServiceImpl messageSender;
@@ -39,7 +37,7 @@ public class AuthController {
     private final UserService userService;
 
     @Autowired
-    public AuthController(EmailServiceImpl messageSender, JwtTokenProvider jwtTokenProvider, AuthenticationManager authenticationManager, ResponseErrorValidation responseErrorValidation, UserService userService) {
+    public AuthController(EmailServiceImpl messageSender, EmailServiceImpl messageSender1, JwtTokenProvider jwtTokenProvider, AuthenticationManager authenticationManager, ResponseErrorValidation responseErrorValidation, UserService userService) {
 //        this.messageSender = messageSender;
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
@@ -49,6 +47,9 @@ public class AuthController {
 
     @PostMapping("/signIn")
     public ResponseEntity<Object> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, BindingResult bindingResult) {
+
+
+//        this.messageSender.sendSimpleMessage("1904.01013@manas.edu.kg","hello","Hello world");
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
 
@@ -57,6 +58,7 @@ public class AuthController {
                 loginRequest.getPassword()
         ));
 
+        System.out.println( "Authorities are " + authentication.getAuthorities());
 //        messageSender.sendSimpleMessage("1904.01013@manas.edu.kg","hello","hello world");
         User user = userService.getUserByUsername(loginRequest.getUsername());
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -66,8 +68,10 @@ public class AuthController {
         return ResponseEntity.ok(new JwtTokenSuccessResponse(true, jwt,user.getRole().toString()));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/signUp")
-    public ResponseEntity<Object> registerUser(@RequestBody SignUpRequest signUpRequest, BindingResult bindingResult) {
+    public ResponseEntity<Object> registerUser(@Valid @RequestBody SignUpRequest signUpRequest,
+                                               BindingResult bindingResult) {
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
         System.out.println("Registering");
@@ -75,6 +79,7 @@ public class AuthController {
             userService.createUser(signUpRequest);
             return ResponseEntity.ok(new MessageResponse("User registered successfully"));
         }catch (RuntimeException e){
+            System.out.println(e.getMessage());
             return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
     }

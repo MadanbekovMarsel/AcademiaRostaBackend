@@ -25,8 +25,8 @@ public class Mark {
     private User user;
 
     @Column(name = "topic")
-    @Enumerated(EnumType.STRING)
-    private Topic topic;
+//    @Enumerated(EnumType.STRING)
+    private String topic;
     @Column(name = "date",nullable = false)
     private Date createdDate;
 }

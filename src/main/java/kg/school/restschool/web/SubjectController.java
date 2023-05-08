@@ -8,6 +8,7 @@ import kg.school.restschool.validations.ResponseErrorValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class SubjectController {
         this.subjectService = subjectService;
         this.responseErrorValidation = responseErrorValidation;
     }
-
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<Object> createSubject(@RequestBody SubjectDTO subjectDTO,
                                                 BindingResult bindingResult){
@@ -52,7 +53,7 @@ public class SubjectController {
     }
 
 
-
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/{idSubject}/update")
     public ResponseEntity<Object> updateSubject(@RequestBody SubjectDTO subjectDTO,
                                                 @PathVariable("idSubject") String idSubject,
@@ -67,15 +68,11 @@ public class SubjectController {
             return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.OK);
         }
     }
-
-    @DeleteMapping ("/{idSubject}")
-    public ResponseEntity<Object> deleteSubject(@PathVariable("idSubject") String idSubject,
-                                                BindingResult bindingResult) {
-        ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
-        if (!ObjectUtils.isEmpty(errors)) return errors;
-
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @DeleteMapping ("/{subjectName}")
+    public ResponseEntity<Object> deleteSubject(@PathVariable("subjectName") String subjectName) {
         try {
-            subjectService.deleteSubjectById(Long.parseLong(idSubject));
+            subjectService.deleteSubjectByName(subjectName);
             return new ResponseEntity<>(new MessageResponse("Subject was deleted!"), HttpStatus.OK);
         }catch (RuntimeException e){
             return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.OK);

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -44,9 +45,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 System.out.println("hello from if() doFilterInternal");
                 User userDetails = userDetailsService.loadUserById(userId);
+                userDetails.setAuthorities(Collections.singletonList(new SimpleGrantedAuthority(userDetails.getRole().toString())));
 
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,null, Collections.emptyList());
+                        userDetails,null,userDetails.getAuthorities());
 
                 System.out.println(userDetails.getFirstName() +" ++++ "+ userDetails.getLastName());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

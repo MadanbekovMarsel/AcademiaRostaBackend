@@ -73,16 +73,16 @@ public class GroupService {
     public Group createGroup(GroupDTO groupDTO) {
         Group group = new Group();
         group.setName(groupDTO.getName());
-        System.out.println(groupDTO.getTeacher().getUsername());
+//        System.out.println(groupDTO.getTeacher().getUsername());
         Subject subject = null;
         User teacher = null;
         if (groupDTO.getSubject() != null) subject = getSubjectByName(groupDTO.getSubject().getName());
         if (groupDTO.getTeacher() != null) {
             teacher = getUserByUsername(groupDTO.getTeacher().getUsername());
             teacher.addGroup(group);
+            group.addUser(teacher);
         }
         group.setSubject(subject);
-        group.addUser(teacher);
         try {
             LOG.info("Saving group {}", group.getName());
             Group g = groupRepository.save(group);

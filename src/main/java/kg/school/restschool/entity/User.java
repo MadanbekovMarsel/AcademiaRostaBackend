@@ -7,6 +7,7 @@ import kg.school.restschool.entity.enums.ERole;
 import kg.school.restschool.entity.enums.Gender;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.sql.Date;
@@ -65,7 +66,7 @@ public class User implements UserDetails {
     private String email;
 
     @Transient
-    private Collection<? extends GrantedAuthority> authorities;
+    private List<? extends GrantedAuthority> authorities;
 
     @PrePersist
     protected void onCreate(){
@@ -74,14 +75,21 @@ public class User implements UserDetails {
 
     public User() {}
 
-    public User(Long id, String username, String password, Collection<? extends GrantedAuthority> authorities) {
+    public User(Long id, String username, String password) {
         this.id = id;
         this.username = username;
         this.password = password;
-        this.authorities = authorities;
     }
 
+
     public void addGroup(Group group){groupsList.add(group);}
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+
     @Override
     public String getPassword(){
         return password;

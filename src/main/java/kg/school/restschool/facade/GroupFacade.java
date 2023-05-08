@@ -15,8 +15,12 @@ public class GroupFacade {
         UserFacade userFacade = new UserFacade();
         GroupDTO groupDTO = new GroupDTO();
         SubjectDTO subjectDTO = new SubjectDTO();
-        subjectDTO.setName(group.getSubject().getName());
-
+        if(group.getSubject() != null){
+            subjectDTO.setName(group.getSubject().getName());
+        }
+        else{
+            subjectDTO.setName(null);
+        }
         for(User teacher: group.getMembers()){
             if(teacher.getRole() == ERole.ROLE_TEACHER){
                 groupDTO.setTeacher(userFacade.userToUserDTO(teacher));

@@ -3,6 +3,7 @@ package kg.school.restschool.payload.request;
 import jakarta.validation.constraints.*;
 import kg.school.restschool.annotations.PasswordMatches;
 import kg.school.restschool.entity.enums.ERole;
+import kg.school.restschool.entity.enums.Gender;
 import lombok.Data;
 
 @Data
@@ -21,7 +22,13 @@ public class SignUpRequest {
     @NotEmpty(message = "Username can't be empty!")
     private String username;
 
+    private Gender gender;
+
     private ERole role;
+
+    private String phoneNumber;
+
+    private String address;
 
     @NotEmpty(message = "Password id required!")
     @Size(min = 6)
