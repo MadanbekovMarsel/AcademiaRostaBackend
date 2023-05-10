@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,31 +30,31 @@ public class MarkService {
         this.markRepository = markRepository;
         this.userRepository = userRepository;
     }
-//
-//    public Mark createMark(MarkDTO markDTO, String username) {
-//        User user;
-//        try {
-//            user = getUserByUsername(username);
-//        } catch (RuntimeException e) {
-//            throw new SearchException(SearchException.USER_NOT_FOUND);
-//        }
-//        Mark mark = getMarkByUserAndDate(user, markDTO.getDate(), markDTO.getTopic());
-//        System.out.println(mark.getCreatedDate() + "created date " + mark.getTopic());
-//
-//        if (mark.getUser() != null) {
-//            System.out.println("mark dates are equal " + (mark.getCreatedDate() == markDTO.getDate()));
-//            System.out.println(mark.getCreatedDate() + " mDTO : " + markDTO.getDate());
-//            System.out.println(mark.getUser().getFirstName());
-//        }
-//        mark.setTopic(markDTO.getTopic());
-//        mark.setUser(user);
-//        mark.setCorrectAnswers(mark.getCorrectAnswers() + markDTO.getCorrectAnswers());
-//        mark.setTotalQuestions(mark.getTotalQuestions() + markDTO.getTotalQuestions());
-//        mark.setCreatedDate(markDTO.getDate());
-//
-//        LOG.info("Saving mark for User {}" + user.getUsername());
-//        return markRepository.save(mark);
-//    }
+
+    public Mark createMark(MarkDTO markDTO, String username) {
+        User user;
+        try {
+            user = getUserByUsername(username);
+        } catch (RuntimeException e) {
+            throw new SearchException(SearchException.USER_NOT_FOUND);
+        }
+        Mark mark = getMarkByUserAndDateAndTopic(user, markDTO.getDate(), markDTO.getTopic());
+        System.out.println(mark.getCreatedDate() + "created date " + mark.getTopic());
+
+        if (mark.getUser() != null) {
+            System.out.println("mark dates are equal " + (mark.getCreatedDate() == markDTO.getDate()));
+            System.out.println(mark.getCreatedDate() + " mDTO : " + markDTO.getDate());
+            System.out.println(mark.getUser().getFirstName());
+        }
+        mark.setTopic(markDTO.getTopic());
+        mark.setUser(user);
+        mark.setCorrectAnswers(mark.getCorrectAnswers() + markDTO.getCorrectAnswers());
+        mark.setTotalQuestions(mark.getTotalQuestions() + markDTO.getTotalQuestions());
+        mark.setCreatedDate(markDTO.getDate());
+
+        LOG.info("Saving mark for User {}" + user.getUsername());
+        return markRepository.save(mark);
+    }
 
     public List<Mark> getMarksByUser(String username) {
         User user = getUserByUsername(username);
@@ -74,8 +75,36 @@ public class MarkService {
     }
 
 
-    private List<Mark> getMarksByUserLastThirtyDays(User user){
+    public List<MarkDTO> getMarksByUserLastThirtyDays(String username){
+        User user = getUserByUsername(username);
         Date thirtyDaysAgo = Date.valueOf(LocalDate.now().minusDays(30));
-        return markRepository.getMarkByUserAndDate(user,thirtyDaysAgo);
+        List<Object[]> resultList = markRepository.getMarksByUniqueDays(user,thirtyDaysAgo);
+        List<MarkDTO> markList = new ArrayList<>();
+        for (Object[] result : resultList) {
+            MarkDTO mark = new MarkDTO();
+            mark.setCorrectAnswers(Math.toIntExact((Long) result[0]));
+            mark.setTotalQuestions(Math.toIntExact((Long) result[1]));
+            mark.setDate((Date) result[2]);
+            markList.add(mark);
+        }
+        return markList;
     }
+
+
+    public List<MarkDTO> getMarksByUserGroupedTopics(String username){
+        User user = getUserByUsername(username);
+        Date thirtyDaysAgo = Date.valueOf(LocalDate.now().minusDays(30));
+        List<Object[]> resultList = markRepository.getMarksByUniqueTopics(user,thirtyDaysAgo);
+        List<MarkDTO> markList = new ArrayList<>();
+        for (Object[] result : resultList) {
+            MarkDTO mark = new MarkDTO();
+            mark.setCorrectAnswers(Math.toIntExact((Long) result[0]));
+            mark.setTotalQuestions(Math.toIntExact((Long) result[1]));
+            mark.setTopic((String) result[2]);
+            markList.add(mark);
+        }
+        return markList;
+    }
+
+
 }

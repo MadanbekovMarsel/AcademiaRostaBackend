@@ -22,49 +22,54 @@ import java.util.List;
 @CrossOrigin
 @RequestMapping("/api/mark")
 public class MarkController {
-//
-//    private final MarkService markService;
-//    private final ResponseErrorValidation responseErrorValidation;
-//
-//    private final MarkFacade markFacade;
-//
-//    @Autowired
-//    public MarkController(MarkService markService, ResponseErrorValidation responseErrorValidation, MarkFacade markFacade) {
-//        this.markService = markService;
-//        this.responseErrorValidation = responseErrorValidation;
-//        this.markFacade = markFacade;
-//    }
-//    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_TEACHER')")
-//    @PatchMapping("/{username}/setMark")
-//    public ResponseEntity<Object> setMarkToUser(@RequestBody MarkDTO markDTO,
-//                                                BindingResult bindingResult,
-//                                                @PathVariable("username")String username){
-//        ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
-//        if (!ObjectUtils.isEmpty(errors)) return errors;
-//
-//        try{
-//            System.out.println("hello there is a new mark for" + username);
-////            markService.createMark(markDTO,username);
-//            return new ResponseEntity<>(new MessageResponse("Done!"), HttpStatus.OK);
-//        }catch (RuntimeException e){
-//            System.out.println(e.getMessage());
-//            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
-//        }
-//    }
-//
-//
-//    @GetMapping("/{username}")
-//    public ResponseEntity<Object> getMarksOfUser(@PathVariable("username")String username){
-//        try {
-//            List<Mark> list = markService.getMarksByUser(username);
-//
-//            List<MarkDTO> responseList = new ArrayList<>();
-//            for (Mark current : list) {
-//                responseList.add(markFacade.markToMarkDTO(current));
-//            }
-//            return new ResponseEntity<>(responseList, HttpStatus.OK);
-//        }catch (RuntimeException e){
-//            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
-//        }
-//    }
+
+    private final MarkService markService;
+    private final ResponseErrorValidation responseErrorValidation;
+
+    private final MarkFacade markFacade;
+
+    @Autowired
+    public MarkController(MarkService markService, ResponseErrorValidation responseErrorValidation, MarkFacade markFacade) {
+        this.markService = markService;
+        this.responseErrorValidation = responseErrorValidation;
+        this.markFacade = markFacade;
+    }
+    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_TEACHER')")
+    @PatchMapping("/{username}/setMark")
+    public ResponseEntity<Object> setMarkToUser(@RequestBody MarkDTO markDTO,
+                                                BindingResult bindingResult,
+                                                @PathVariable("username")String username){
+        ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
+        if (!ObjectUtils.isEmpty(errors)) return errors;
+
+        try{
+            System.out.println("hello there is a new mark for" + username);
+            markService.createMark(markDTO,username);
+            return new ResponseEntity<>(new MessageResponse("Done!"), HttpStatus.OK);
+        }catch (RuntimeException e){
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
+    @GetMapping("/{username}")
+    public ResponseEntity<Object> getMarksOfUserByDays(@PathVariable("username")String username){
+        try {
+            List<MarkDTO> list = markService.getMarksByUserLastThirtyDays(username);
+            return new ResponseEntity<>(list, HttpStatus.OK);
+        }catch (RuntimeException e){
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/{username}/byTopics")
+    public ResponseEntity<Object> getMarksOfUserByTopics(@PathVariable("username") String username){
+        try{
+            List<MarkDTO> list = markService.getMarksByUserGroupedTopics(username);
+            return new ResponseEntity<>(list, HttpStatus.OK);
+        }catch (RuntimeException e){
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+    }
 }

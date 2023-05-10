@@ -2,7 +2,6 @@ package kg.school.restschool.repositories;
 
 import kg.school.restschool.entity.Mark;
 import kg.school.restschool.entity.User;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -25,8 +24,12 @@ public interface MarkRepository extends JpaRepository<Mark, Long> {
     @Query("SELECT m FROM Mark m WHERE m.user = ?1 and m.createdDate >=?2")
     List<Mark> getMarkByUserAndDate(User user, Date thirtyDaysAgo);
 
-    @Query("SELECT m.user, SUM(m.correctAnswers), SUM(m.totalQuestions), m.createdDate " +
-            "FROM Mark m WHERE m.createdDate >= ?2 GROUP BY m.createdDate,m.user")
-    List<Mark> getMarksByUniqueDays(User user, Date date);
+    @Query("SELECT SUM(m.correctAnswers), SUM(m.totalQuestions), m.createdDate " +
+            "FROM Mark m WHERE m.user = ?1 and m.createdDate >= ?2 GROUP BY m.createdDate,m.user ORDER BY m.createdDate")
+    List<Object[]> getMarksByUniqueDays(User user, Date date);
+
+    @Query("SELECT SUM(m.correctAnswers),SUM(m.totalQuestions), m.topic " +
+            "FROM Mark m WHERE m.user = ?1 and m.createdDate >= ?2 GROUP BY m.topic, m.user")
+    List<Object[]> getMarksByUniqueTopics(User user, Date date);
 
 }
