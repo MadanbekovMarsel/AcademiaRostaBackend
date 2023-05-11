@@ -2,7 +2,6 @@ package kg.school.restschool.dto;
 
 
 import jakarta.validation.constraints.NotEmpty;
-import kg.school.restschool.entity.enums.Topic;
 import lombok.Data;
 
 import java.sql.Date;

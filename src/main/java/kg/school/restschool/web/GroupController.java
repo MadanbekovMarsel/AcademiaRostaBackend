@@ -52,8 +52,7 @@ public class GroupController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/create")
-    public ResponseEntity<Object> createGroup(Authentication authentication,
-                                              @Valid @RequestBody GroupDTO groupDTO,
+    public ResponseEntity<Object> createGroup(@Valid @RequestBody GroupDTO groupDTO,
                                               BindingResult bindingResult) {
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
@@ -138,9 +137,10 @@ public class GroupController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PatchMapping("/{idGroup}/update")
-    public ResponseEntity<Object> updateGroupById(@Valid @RequestBody GroupDTO groupDTO,
-                                                  @PathVariable("idGroup") String idGroup, BindingResult bindingResult) {
+    @PutMapping("/{idGroup}/update")
+    public ResponseEntity<Object> updateGroupById(@RequestBody GroupDTO groupDTO,
+                                                  @PathVariable("idGroup") String idGroup,
+                                                  BindingResult bindingResult) {
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
 

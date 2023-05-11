@@ -123,25 +123,22 @@ public class UserService {
     }
 
 
-    public User userUpdate(UserDTO userDTO, Principal principal) throws SearchException {
-        User user = getUserByPrincipal(principal);
-        user.setFirstName(userDTO.getFirstname());
-        user.setLastName(userDTO.getLastname());
-        user.setUsername((userDTO.getUsername() != null) ? userDTO.getUsername() : user.getUsername());
+    public User userUpdate(UserDTO userDTO, Principal principal, String targetUsername) throws InvalidDataException {
+        User requester = getUserByPrincipal(principal);
+        User targetUser = getUserByUsername(targetUsername);
+        if(!requester.equals(targetUser) && !requester.getRole().equals(ERole.ROLE_ADMIN)){
+            throw new InvalidDataException(InvalidDataException.TARGET_USER_NOT_EQUAL_REQUESTER);
+        }
 
-        user.setAge((userDTO.getAge() != 0) ? userDTO.getAge() : user.getAge());
-        return userRepository.save(user);
+        if((userDTO.getFirstname().length()> 2)) targetUser.setFathersName(userDTO.getFirstname());
+        System.out.println(userDTO.getLastname() + "<- updating lastname");
+        if(userDTO.getLastname().length() > 2)   targetUser.setLastName(userDTO.getLastname());
+        if(userDTO.getEmail().length() > 2)  targetUser.setEmail(userDTO.getEmail());
+        if(userDTO.getAddress().length() >2)    targetUser.setAddress(userDTO.getAddress());
+        if(Validator.validNumber(userDTO.getPhoneNumber()) != null)    targetUser.setPhoneNumber(Validator.validNumber(userDTO.getPhoneNumber()));
+
+        return userRepository.save(targetUser);
     }
-
-    public User updateUserById(Long id, UserDTO userDTO){
-        User userToUpdate = getUserById(id);
-        userToUpdate.setFirstName((userDTO.getFirstname() != null) ? userDTO.getFirstname() : userToUpdate.getFirstName());
-        userToUpdate.setLastName((userDTO.getLastname() != null) ? userDTO.getLastname() : userToUpdate.getLastName());
-        userToUpdate.setAge((userDTO.getAge() != 0) ? userDTO.getAge() : userToUpdate.getAge());
-        return userRepository.save(userToUpdate);
-    }
-
-
 
     private Group getGroupByGroupId(Long groupId) {
         return groupRepository.findById(groupId).orElseThrow(() -> new SearchException(SearchException.GROUP_NOT_FOUND));
@@ -174,5 +171,11 @@ public class UserService {
             response.add(groupFacade.groupToGroupDTO(current));
         }
         return response;
+    }
+
+    public void deleteUserByUsername(String username) {
+        User userToDelete = getUserByUsername(username);
+        userRepository.delete(userToDelete);
+
     }
 }

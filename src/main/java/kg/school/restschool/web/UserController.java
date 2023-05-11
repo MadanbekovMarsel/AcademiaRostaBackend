@@ -6,6 +6,7 @@ import kg.school.restschool.dto.UserDTO;
 import kg.school.restschool.entity.Group;
 import kg.school.restschool.entity.User;
 import kg.school.restschool.entity.enums.ERole;
+import kg.school.restschool.exceptions.InvalidDataException;
 import kg.school.restschool.exceptions.SearchException;
 import kg.school.restschool.facade.GroupFacade;
 import kg.school.restschool.facade.UserFacade;
@@ -118,25 +119,39 @@ public class UserController {
 
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserDTO> getUserProfile(@PathVariable("userId") String userId) {
-        User user = userService.getUserById(Long.parseLong(userId));
+    @GetMapping("/{username}")
+    public ResponseEntity<UserDTO> getUserProfile(@PathVariable("username") String username) {
+        User user = userService.getUserByUsername(username);
         UserDTO userDTO = userFacade.userToUserDTO(user);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PatchMapping("/")
-    public ResponseEntity<Object> updateUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult, Principal principal) throws SearchException {
+    @PatchMapping("/{username}/update")
+    public ResponseEntity<Object> updateUser(@PathVariable("username")String targetUsername,
+                                             @RequestBody UserDTO userDTO,
+                                             BindingResult bindingResult,
+                                             Principal principal){
         ResponseEntity<Object> errors = responseErrorValidation.mapValidationService(bindingResult);
         if (!ObjectUtils.isEmpty(errors)) return errors;
 
         try {
-            User user = userService.userUpdate(userDTO, principal);
+            User user = userService.userUpdate(userDTO, principal,targetUsername);
             UserDTO userUpdated = userFacade.userToUserDTO(user);
             return new ResponseEntity<>(userUpdated, HttpStatus.OK);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | InvalidDataException e) {
+            System.out.println(e.getMessage());
             return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @DeleteMapping("{username}")
+    public ResponseEntity<Object> deleteUser(@PathVariable("username") String username){
+        try{
+            userService.deleteUserByUsername(username);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch (RuntimeException e){
+            return new ResponseEntity<>(new MessageResponse(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
     }
 }

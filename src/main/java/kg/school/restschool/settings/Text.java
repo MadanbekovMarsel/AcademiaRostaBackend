@@ -71,6 +71,7 @@ public class Text {
         data.put("ERROR_INVALID_EMAIL","Возраст введен неверно!");
         data.put("ERROR_INVALID_TIME_FORMAT","Время введено неверно");
         data.put("ERROR_INVALID_PHONE_NUMBER","Номер введен неправильно");
+        data.put("ERROR_TARGET_USER_NOT_EQUAL_REQUESTER","Вы не можете изменять данные другого пользователя");
 
 
         data.put("YES","Да");

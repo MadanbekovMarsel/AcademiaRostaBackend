@@ -7,11 +7,11 @@ import lombok.Data;
 @Data
 public class UserDTO {
     private Long id;
-    @NotEmpty
     private String firstname;
-    @NotEmpty
     private String lastname;
     private String username;
+
+    private String email;
     private int age;
     private String phoneNumber;
     private String address;

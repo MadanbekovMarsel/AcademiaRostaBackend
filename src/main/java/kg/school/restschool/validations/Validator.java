@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class Validator {
     public static String validNumber(String number) throws InvalidDataException {
-        if(number == null)  return null;
+        if(number.length() == 0)  return null;
         number = number.replaceAll(" ", "");
         for (String prefix : Templates.numberPrefixes) {
             if (number.startsWith(prefix)) {

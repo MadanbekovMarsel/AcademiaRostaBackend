@@ -144,11 +144,16 @@ public class GroupService {
 
     public Group updateGroup(Long idGroup, GroupDTO groupDTO) {
         Group group = getGroupById(idGroup);
-        Subject subject = null;
-        if (groupDTO.getSubject() != null) {
-            subject = getSubjectByName(groupDTO.getSubject().getName());
+        try {
+            if (groupDTO.getName() != null) getGroupByName(groupDTO.getName());
+        } catch (SearchException e) {
+            group.setName(groupDTO.getName());
         }
-        group.setSubject(subject);
+        if (groupDTO.getSubject() != null) {
+            Subject subject = getSubjectByName(groupDTO.getSubject().getName());
+            group.setSubject(subject);
+        }
+        if (groupDTO.getTeacher() != null) setTeacherToGroup(groupDTO.getTeacher().getUsername(), group.getName());
         return groupRepository.save(group);
     }
 
@@ -167,7 +172,7 @@ public class GroupService {
         try {
             Group group = getGroupByName(groupname);
             User toDelete = group.getTeacher();
-            if(toDelete != null) removeUserFromGroup(groupname,toDelete.getUsername());
+            if (toDelete != null) removeUserFromGroup(groupname, toDelete.getUsername());
             System.out.println("im going to add a new teacher!");
             User teacher = getUserByUsername(username);
             teacher.addGroup(group);
@@ -198,9 +203,6 @@ public class GroupService {
 
     //Get Methods
 
-    public Subject getSubjectById(Long subjectId) {
-        return subjectRepository.findSubjectById(subjectId).orElseThrow(() -> new SearchException(SearchException.SUBJECT_NOT_FOUND));
-    }
 
     private Subject getSubjectByName(String subjectName) {
         return subjectRepository.findSubjectByName(subjectName).orElseThrow(() -> new SearchException(SearchException.SUBJECT_NOT_FOUND));
@@ -219,10 +221,10 @@ public class GroupService {
     }
 
     public void deleteGroup(String groupName) {
-        try{
+        try {
             Group group = getGroupByName(groupName);
             groupRepository.delete(group);
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             throw new SearchException(SearchException.GROUP_NOT_FOUND);
         }
     }

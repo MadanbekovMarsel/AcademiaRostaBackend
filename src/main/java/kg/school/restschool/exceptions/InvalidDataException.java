@@ -10,6 +10,8 @@ public class InvalidDataException extends Exception{
     public static final int EMPTY_NAME = 4;
     public static final int INVALID_PHONE_NUMBER = 5;
 
+    public static final int TARGET_USER_NOT_EQUAL_REQUESTER = 6;
+
     private final int code;
     public InvalidDataException(int code){
         this.code = code;
@@ -21,6 +23,7 @@ public class InvalidDataException extends Exception{
             case 3 -> Text.get("ERROR_INVALID_EMAIL");
             case 4 -> Text.get("ERROR_NAME_EMPTY");
             case 5 -> Text.get("ERROR_INVALID_PHONE_NUMBER");
+            case 6 -> Text.get("ERROR_TARGET_USER_NOT_EQUAL_REQUESTER");
             default -> null;
         };
     }
